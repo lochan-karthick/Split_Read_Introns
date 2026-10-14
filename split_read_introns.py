@@ -84,7 +84,11 @@ def sam_file_parser(sam_file):
             #Storing CIGAR strings:
             cigar = columns[5]
             #Storing NH column to check if reads are split:
-            NH_nos = int(columns[-1].split(':')[2])
+            nh_field = next(
+                (field for field in columns[11:] if field.startswith('NH:i:')),
+                None
+            )
+            NH_nos = int(nh_field.rsplit(':', 1)[1]) if nh_field else None
             
             #For reads that have aligned only once:
             if NH_nos == 1:
@@ -98,7 +102,7 @@ def sam_file_parser(sam_file):
                         
                     #Initializing the startposition of read and Extracting the M/N:
                     current_position = position
-                    matches = re.finditer(r'(\d+)([MIDNS])', cigar)
+                    matches = re.finditer(r'(\d+)([MIDNSHP=X])', cigar)
                     
                     #Iterating over the matches:
                     for match in matches:
@@ -106,7 +110,7 @@ def sam_file_parser(sam_file):
                         length, char = int(match.group(1)), match.group(2)
                         
                         #If already matched we just add the length
-                        if char == 'M':
+                        if char in ('M', 'D', '=', 'X'):
                             current_position += length
                             
                         #If skipped previously we update the positions and increase the count of supporting reads:
@@ -197,7 +201,7 @@ def main():
     
     #Writing the output
     #Hardcoding the name of the file:
-    outputfile = "Split_read_introns"
+    outputfile = "generated_introns"
     output_file = f"{outputfile}.txt"
     
     #calling the output writer function
