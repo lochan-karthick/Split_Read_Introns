@@ -194,7 +194,7 @@ def main():
     gene_info = gene_file_parser(gene_file)
     print(f"Processed {len(gene_info)} genes.")
     sam_info = sam_file_parser(sam_file)
-    print(f"Processed {len(sam_info)} junctions.")
+    print(f"Processed {sum(len(j) for j in sam_info.values())} junctions.")
     
     #Calling a function to perform the mapping between genes and their Junctions
     junctions = junction_to_gene_mapper(gene_info, sam_info)
